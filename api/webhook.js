@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import { bot, handleMessage, handleCallbackQuery } from '../index.js';
 
 // Логируем переменные окружения при инициализации
