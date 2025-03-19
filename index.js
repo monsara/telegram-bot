@@ -2,6 +2,13 @@ const TelegramApi = require('node-telegram-bot-api');
 const { gameOptions, againOptions } = require('./options');
 const token = process.env.BOT_TOKEN || '7827133690:AAEmYWWBswTNpm4FCY3pq06bJHwhqZQ5cVY';
 
+// Отладочный вывод
+console.log('Environment variables:', {
+  VERCEL_URL: process.env.VERCEL_URL,
+  BOT_TOKEN: process.env.BOT_TOKEN,
+  isDev: !process.env.VERCEL_URL
+});
+
 // Создаем объект для хранения состояния игры
 const chats = {};
 
