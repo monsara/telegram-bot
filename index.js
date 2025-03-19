@@ -100,4 +100,4 @@ initializeBot();
 console.log('Бот запущен в режиме:', isDev ? 'разработки (polling)' : 'продакшн (webhook)');
 
 // Экспортируем бота для использования в webhook
-module.exports = bot; 
+module.exports = { bot }; 

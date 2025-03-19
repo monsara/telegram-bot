@@ -1,4 +1,4 @@
-const bot = require('../index.js');
+const { bot } = require('../index.js');
 
 console.log('Webhook handler initialized with environment:', {
   VERCEL_URL: process.env.VERCEL_URL,
@@ -7,7 +7,7 @@ console.log('Webhook handler initialized with environment:', {
 });
 
 // Обработчик webhook-ов для Vercel
-module.exports = async (request, response) => {
+export default async (request, response) => {
   try {
     console.log('Получен webhook запрос:', request.method);
     console.log('Headers:', request.headers);
