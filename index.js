@@ -14,12 +14,22 @@ const chats = {};
 
 // Настройка бота
 const isDev = !process.env.VERCEL_URL;
+const webhookUrl = process.env.VERCEL_URL
+  ? `https://${process.env.VERCEL_URL}/api/webhook`
+  : 'https://telegram-bot-ngjq-apwyq1djk-monsaras-projects.vercel.app/api/webhook';
+
 const bot = new TelegramApi(token, {
   polling: isDev, // polling только в режиме разработки
   webHook: isDev ? false : {
+    url: webhookUrl,
     port: process.env.PORT || 443
   }
 });
+
+// Если мы в продакшене, устанавливаем вебхук
+if (!isDev) {
+  bot.setWebHook(webhookUrl);
+}
 
 // Команды бота
 bot.setMyCommands([
