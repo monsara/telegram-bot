@@ -99,8 +99,12 @@ const initializeBot = async () => {
     bot.on('message', handleMessage);
     bot.on('callback_query', handleCallbackQuery);
   } else {
-    // В продакшене устанавливаем вебхук
-    await bot.setWebHook(webhookUrl);
+    // В продакшене устанавливаем вебхук с секретным токеном
+    const secretToken = Math.random().toString(36).substring(2);
+    console.log('Setting webhook with secret token:', secretToken);
+    await bot.setWebHook(webhookUrl, {
+      secret_token: secretToken
+    });
   }
 };
 
