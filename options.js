@@ -7,7 +7,7 @@ export const gameOptions = {
       [{ text: '0', callback_data: '0' }]
     ]
   })
-}
+};
 
 export const againOptions = {
   reply_markup: JSON.stringify({
@@ -15,5 +15,5 @@ export const againOptions = {
       [{ text: 'Играть еще раз', callback_data: '/again' }]
     ]
   })
-}
+};
 
