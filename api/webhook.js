@@ -1,10 +1,18 @@
 const bot = require('../index.js');
 
+console.log('Webhook handler initialized with environment:', {
+  VERCEL_URL: process.env.VERCEL_URL,
+  NODE_ENV: process.env.NODE_ENV,
+  BOT_TOKEN: process.env.BOT_TOKEN ? 'Set' : 'Not set'
+});
+
 // Обработчик webhook-ов для Vercel
 module.exports = async (request, response) => {
   try {
     console.log('Получен webhook запрос:', request.method);
     console.log('Headers:', request.headers);
+    console.log('Query:', request.query);
+    console.log('Body:', request.body);
 
     if (request.method === 'POST') {
       const update = request.body;
@@ -24,7 +32,8 @@ module.exports = async (request, response) => {
     return response.status(200).json({
       ok: true,
       message: 'Telegram Bot is running',
-      environment: process.env.VERCEL_URL ? 'production' : 'development'
+      environment: process.env.VERCEL_URL ? 'production' : 'development',
+      vercel_url: process.env.VERCEL_URL
     });
   } catch (error) {
     console.error('Ошибка при обработке webhook:', error);
