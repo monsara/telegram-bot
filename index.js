@@ -6,14 +6,13 @@ const token = process.env.BOT_TOKEN || '7827133690:AAEmYWWBswTNpm4FCY3pq06bJHwhq
 const chats = {};
 
 // Настройка бота
-const bot = new TelegramApi(token, { webHook: { port: process.env.PORT } });
-
-// Установка webhook URL для продакшн среды
-if (process.env.VERCEL_URL) {
-  const webhookUrl = `https://${process.env.VERCEL_URL}/api/webhook`;
-  console.log('Setting webhook URL:', webhookUrl);
-  bot.setWebHook(webhookUrl);
-}
+const isDev = !process.env.VERCEL_URL;
+const bot = new TelegramApi(token, {
+  polling: isDev, // polling только в режиме разработки
+  webHook: isDev ? false : {
+    port: process.env.PORT || 443
+  }
+});
 
 // Команды бота
 bot.setMyCommands([
@@ -91,6 +90,7 @@ const initializeBot = () => {
 
 // Инициализируем бота
 initializeBot();
+console.log('Бот запущен в режиме:', isDev ? 'разработки (polling)' : 'продакшн (webhook)');
 
 // Экспортируем бота для использования в webhook
 module.exports = bot; 
