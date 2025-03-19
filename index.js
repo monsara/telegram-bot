@@ -1,14 +1,21 @@
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import TelegramApi from 'node-telegram-bot-api';
 import { gameOptions, againOptions } from './options.js';
 
-const token = process.env.BOT_TOKEN || '7827133690:AAEmYWWBswTNpm4FCY3pq06bJHwhqZQ5cVY';
-const isDev = !process.env.VERCEL_URL;
+// Получаем путь к текущей директории
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-// Отладочный вывод
+// Загружаем переменные окружения
+dotenv.config();
+
+// Отладочный вывод всех переменных окружения
 console.log('Environment variables:', {
-  VERCEL_URL: process.env.VERCEL_URL,
   BOT_TOKEN: process.env.BOT_TOKEN,
-  isDev: isDev
+  VERCEL_URL: process.env.VERCEL_URL,
+  isDev: !process.env.VERCEL_URL
 });
 
 // Создаем объект для хранения состояния игры
@@ -19,8 +26,10 @@ const webhookUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}/api/webhook`
   : 'https://telegram-bot-ngjq-apwyq1djk-monsaras-projects.vercel.app/api/webhook';
 
-const bot = new TelegramApi(token, {
-  webHook: {
+// Создаем бота с разными настройками в зависимости от режима
+const bot = new TelegramApi(process.env.BOT_TOKEN, {
+  polling: !process.env.VERCEL_URL, // polling только в режиме разработки
+  webHook: !process.env.VERCEL_URL ? false : {
     host: '0.0.0.0',
     port: process.env.PORT || 443
   }
@@ -93,15 +102,14 @@ const initializeBot = async () => {
     { command: '/game', description: 'Игра угадай цифру' }
   ]);
 
-  if (isDev) {
-    // В режиме разработки используем polling
-    bot.startPolling();
+  if (!process.env.VERCEL_URL) {
+    // В режиме разработки используем только обработчики событий
     bot.on('message', handleMessage);
     bot.on('callback_query', handleCallbackQuery);
   } else {
     // В продакшене устанавливаем вебхук с секретным токеном
-    const secretToken = Math.random().toString(36).substring(2);
-    console.log('Setting webhook with secret token:', secretToken);
+    const secretToken = process.env.WEBHOOK_SECRET || 'your-256-bit-secret';
+    console.log('Setting webhook with secret token');
     await bot.setWebHook(webhookUrl, {
       secret_token: secretToken
     });
@@ -110,7 +118,7 @@ const initializeBot = async () => {
 
 // Запускаем бота
 initializeBot().then(() => {
-  console.log('Бот запущен в режиме:', isDev ? 'разработки (polling)' : 'продакшн (webhook)');
+  console.log('Бот запущен в режиме:', !process.env.VERCEL_URL ? 'разработки (polling)' : 'продакшн (webhook)');
 });
 
 // Экспортируем бота и обработчики для использования в webhook
