@@ -6,8 +6,18 @@ const chats = {};
 
 // Создаем бота с поддержкой webhook
 const bot = new TelegramBot(process.env.BOT_TOKEN, {
-  webHook: true // Важно: включаем поддержку webhook
+  webHook: {
+    port: 443
+  }
 });
+
+// Если мы в Vercel, устанавливаем webhook
+if (process.env.VERCEL_URL) {
+  const webhookUrl = `https://${process.env.VERCEL_URL}/api/telegram`;
+  bot.setWebHook(webhookUrl).then(() => {
+    console.log('Webhook set to:', webhookUrl);
+  }).catch(console.error);
+}
 
 // Экспортируем обработчики отдельно
 export const handleMessage = async (msg) => {

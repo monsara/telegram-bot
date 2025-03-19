@@ -2,11 +2,13 @@
   "name": "telegram-bot",
   "version": "1.0.0",
   "description": "Simple Telegram bot",
-  "main": "index.js",
   "type": "module",
+  "engines": {
+    "node": "^18.0.0"
+  },
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "node src/bot.js",
+    "dev": "nodemon src/bot.js"
   },
   "keywords": [],
   "author": "",
