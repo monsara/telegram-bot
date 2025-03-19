@@ -8,6 +8,13 @@ const chats = {};
 // Настройка бота
 const bot = new TelegramApi(token, { webHook: { port: process.env.PORT } });
 
+// Установка webhook URL для продакшн среды
+if (process.env.VERCEL_URL) {
+  const webhookUrl = `https://${process.env.VERCEL_URL}/api/webhook`;
+  console.log('Setting webhook URL:', webhookUrl);
+  bot.setWebHook(webhookUrl);
+}
+
 // Команды бота
 bot.setMyCommands([
   {
