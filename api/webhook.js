@@ -1,4 +1,4 @@
-const { bot } = require('../index.js');
+import { bot } from '../index.js';
 
 console.log('Webhook handler initialized with environment:', {
   VERCEL_URL: process.env.VERCEL_URL,

@@ -1,5 +1,5 @@
-const TelegramApi = require('node-telegram-bot-api');
-const { gameOptions, againOptions } = require('./options');
+import TelegramApi from 'node-telegram-bot-api';
+import { gameOptions, againOptions } from './options.js';
 const token = process.env.BOT_TOKEN || '7827133690:AAEmYWWBswTNpm4FCY3pq06bJHwhqZQ5cVY';
 
 // Отладочный вывод
@@ -100,4 +100,4 @@ initializeBot();
 console.log('Бот запущен в режиме:', isDev ? 'разработки (polling)' : 'продакшн (webhook)');
 
 // Экспортируем бота для использования в webhook
-module.exports = { bot }; 
+export { bot }; 
