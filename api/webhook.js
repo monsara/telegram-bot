@@ -1,4 +1,4 @@
-import { bot } from '../index.js';
+import { bot, handleMessage, handleCallbackQuery } from '../index.js';
 
 console.log('Webhook handler initialized with environment:', {
   VERCEL_URL: process.env.VERCEL_URL,
@@ -32,7 +32,13 @@ export default async (request, response) => {
       console.log('Обрабатываем update:', JSON.stringify(update, null, 2));
 
       try {
-        await bot.handleUpdate(update);
+        // Определяем тип обновления и вызываем соответствующий обработчик
+        if (update.message) {
+          await handleMessage(update.message);
+        } else if (update.callback_query) {
+          await handleCallbackQuery(update.callback_query);
+        }
+
         console.log('Update обработан успешно');
         return response.status(200).json({ ok: true });
       } catch (botError) {
