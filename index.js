@@ -26,13 +26,9 @@ const webhookUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}/api/webhook`
   : 'https://telegram-bot-ngjq-apwyq1djk-monsaras-projects.vercel.app/api/webhook';
 
-// Создаем бота с разными настройками в зависимости от режима
+// Создаем бота
 const bot = new TelegramApi(process.env.BOT_TOKEN, {
-  polling: !process.env.VERCEL_URL, // polling только в режиме разработки
-  webHook: !process.env.VERCEL_URL ? false : {
-    host: '0.0.0.0',
-    port: process.env.PORT || 443
-  }
+  polling: !process.env.VERCEL_URL // polling только в режиме разработки
 });
 
 // Функции бота
@@ -95,31 +91,29 @@ const handleCallbackQuery = async (query) => {
 
 // Инициализация бота
 const initializeBot = async () => {
-  // Устанавливаем команды
-  await bot.setMyCommands([
-    { command: '/start', description: 'Узнать куда ты попал' },
-    { command: '/info', description: 'Узнать кто ты' },
-    { command: '/game', description: 'Игра угадай цифру' }
-  ]);
+  try {
+    // Устанавливаем команды
+    await bot.setMyCommands([
+      { command: '/start', description: 'Узнать куда ты попал' },
+      { command: '/info', description: 'Узнать кто ты' },
+      { command: '/game', description: 'Игра угадай цифру' }
+    ]);
 
-  if (!process.env.VERCEL_URL) {
-    // В режиме разработки используем только обработчики событий
-    bot.on('message', handleMessage);
-    bot.on('callback_query', handleCallbackQuery);
-  } else {
-    // В продакшене устанавливаем вебхук с секретным токеном
-    const secretToken = process.env.WEBHOOK_SECRET || 'your-256-bit-secret';
-    console.log('Setting webhook with secret token');
-    await bot.setWebHook(webhookUrl, {
-      secret_token: secretToken
-    });
+    if (!process.env.VERCEL_URL) {
+      // В режиме разработки используем polling
+      bot.on('message', handleMessage);
+      bot.on('callback_query', handleCallbackQuery);
+      console.log('Бот запущен в режиме разработки (polling)');
+    } else {
+      console.log('Бот запущен в режиме webhook');
+    }
+  } catch (error) {
+    console.error('Ошибка при инициализации бота:', error);
   }
 };
 
 // Запускаем бота
-initializeBot().then(() => {
-  console.log('Бот запущен в режиме:', !process.env.VERCEL_URL ? 'разработки (polling)' : 'продакшн (webhook)');
-});
+initializeBot();
 
 // Экспортируем бота и обработчики для использования в webhook
 export { bot, handleMessage, handleCallbackQuery }; 

@@ -1,73 +1,75 @@
 import 'dotenv/config';
 import { bot, handleMessage, handleCallbackQuery } from '../index.js';
 
-// Отладочный вывод всех переменных окружения
-console.log('Webhook handler initialized with environment:', {
+// Логируем переменные окружения при инициализации
+console.log('Webhook environment:', {
+  BOT_TOKEN: process.env.BOT_TOKEN?.slice(0, 5) + '...',
   VERCEL_URL: process.env.VERCEL_URL,
-  NODE_ENV: process.env.NODE_ENV,
-  BOT_TOKEN: process.env.BOT_TOKEN ? 'Set' : 'Not set',
-  WEBHOOK_SECRET: process.env.WEBHOOK_SECRET ? 'Set' : 'Not set'
+  NODE_ENV: process.env.NODE_ENV
 });
 
 // Обработчик webhook-ов для Vercel
-export default async (request, response) => {
+export default async function handler(request, response) {
   try {
-    console.log('Получен webhook запрос:', {
+    // Логируем детали запроса
+    console.log('Webhook request details:', {
       method: request.method,
       url: request.url,
-      headers: request.headers,
-      query: request.query,
-      body: request.body
+      headers: {
+        'content-type': request.headers['content-type'],
+        'x-telegram-bot-api-secret-token': request.headers['x-telegram-bot-api-secret-token']
+      },
+      body: typeof request.body === 'string' ? 'string' : typeof request.body,
+      rawBody: request.body
     });
 
-    if (request.method === 'POST') {
-      const update = request.body;
-
-      if (!update) {
-        console.error('Получен пустой update');
-        return response.status(400).json({
-          error: 'No update in request body',
-          headers: request.headers,
-          method: request.method
-        });
-      }
-
-      console.log('Обрабатываем update:', JSON.stringify(update, null, 2));
-
-      try {
-        // Определяем тип обновления и вызываем соответствующий обработчик
-        if (update.message) {
-          await handleMessage(update.message);
-        } else if (update.callback_query) {
-          await handleCallbackQuery(update.callback_query);
-        }
-
-        console.log('Update обработан успешно');
-        return response.status(200).json({ ok: true });
-      } catch (botError) {
-        console.error('Ошибка при обработке update ботом:', botError);
-        return response.status(500).json({
-          error: 'Bot update handling error',
-          message: botError.message
-        });
-      }
+    if (request.method !== 'POST') {
+      console.log('Invalid method:', request.method);
+      return response.status(405).json({ error: 'Method not allowed' });
     }
 
-    // Для GET запросов возвращаем статус бота
-    return response.status(200).json({
-      ok: true,
-      message: 'Telegram Bot is running',
-      environment: process.env.VERCEL_URL ? 'production' : 'development',
-      vercel_url: process.env.VERCEL_URL,
-      webhook_url: process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}/api/webhook`
-        : 'https://telegram-bot-ngjq-apwyq1djk-monsaras-projects.vercel.app/api/webhook'
-    });
+    let update;
+    try {
+      update = typeof request.body === 'string' ? JSON.parse(request.body) : request.body;
+      console.log('Parsed update:', JSON.stringify(update, null, 2));
+    } catch (error) {
+      console.error('Error parsing request body:', error);
+      return response.status(400).json({ error: 'Invalid request body' });
+    }
+
+    if (!update) {
+      console.log('Empty update received');
+      return response.status(400).json({ error: 'Empty update' });
+    }
+
+    try {
+      if (update.message) {
+        console.log('Processing message:', {
+          chat_id: update.message.chat.id,
+          text: update.message.text
+        });
+        await handleMessage(update.message);
+        console.log('Message processed successfully');
+      } else if (update.callback_query) {
+        console.log('Processing callback query:', {
+          chat_id: update.callback_query.message.chat.id,
+          data: update.callback_query.data
+        });
+        await handleCallbackQuery(update.callback_query);
+        console.log('Callback query processed successfully');
+      } else {
+        console.log('Unknown update type:', update);
+      }
+
+      return response.status(200).json({ ok: true });
+    } catch (error) {
+      console.error('Error processing update:', error);
+      console.error('Error stack:', error.stack);
+      return response.status(500).json({ error: 'Internal server error' });
+    }
   } catch (error) {
-    console.error('Ошибка при обработке webhook:', error);
-    return response.status(500).json({
-      error: error.message,
-      stack: error.stack
-    });
+    console.error('Webhook handler error:', error);
+    console.error('Error stack:', error.stack);
+    return response.status(500).json({ error: 'Internal server error' });
   }
-}; 
+} 
