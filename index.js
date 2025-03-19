@@ -99,10 +99,11 @@ const initializeBot = async () => {
       { command: '/game', description: 'Игра угадай цифру' }
     ]);
 
+    // Устанавливаем обработчики событий независимо от режима работы
+    bot.on('message', handleMessage);
+    bot.on('callback_query', handleCallbackQuery);
+
     if (!process.env.VERCEL_URL) {
-      // В режиме разработки используем polling
-      bot.on('message', handleMessage);
-      bot.on('callback_query', handleCallbackQuery);
       console.log('Бот запущен в режиме разработки (polling)');
     } else {
       console.log('Бот запущен в режиме webhook');
@@ -115,5 +116,5 @@ const initializeBot = async () => {
 // Запускаем бота
 initializeBot();
 
-// Экспортируем бота и обработчики для использования в webhook
+// Экспортируем бот и обработчики для использования в webhook
 export { bot, handleMessage, handleCallbackQuery }; 
